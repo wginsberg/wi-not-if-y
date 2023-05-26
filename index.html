@@ -1,0 +1,57 @@
+<html>
+    <body>
+        <button onClick="userCheck()">Check Wifi</button>
+        <div id="online" hidden>
+            <p>Wifi is online</p>
+        </div>
+        <div id="offline" hidden>
+            <p>Wifi is offline</p>
+            <button onClick="setPush()">Give me a push notification when it is back online</button>
+        </div>
+    </body>
+
+    <script>
+
+        registerServiceWorker()
+
+        function checkWifi() {
+            const headers = { pragma: "no-cache" }
+            return fetch("touch", { headers })
+        }
+
+        function userCheck() {
+            checkWifi()
+                .then(setWifiOn)
+                .catch(setWifiOff)
+        }
+
+        function setWifiOff() {
+            document.getElementById("online").hidden = "hidden"
+            document.getElementById("offline").hidden = ""
+        }
+
+        function setWifiOn() {
+            document.getElementById("online").hidden = ""
+            document.getElementById("offline").hidden = "hidden"
+        }
+
+        function registerServiceWorker() {
+            return navigator.serviceWorker.register('/service-worker.js')
+                .then(function (registration) {
+                   console.log('Service worker successfully registered.');
+                    return registration;
+                })
+                .catch(function (err) {
+                    console.error('Unable to register service worker.', err);
+                });
+        }
+
+        async function setPush() {
+            const permission = await Notification.requestPermission()
+
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.active.postMessage("notify");
+            });
+        }
+    </script>
+</html>
